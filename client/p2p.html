@@ -160,6 +160,24 @@
   <script src="./js/jquery.js"></script>
   <script src="./js/socket.io.js"></script>
   <script>
+    function promiseA() {
+      return new Promise((res, rej) => {
+        // res('ok')
+        rej('error')
+      })
+    }
+    async function funA() {
+      const a = await promiseA().catch(async e => {
+        console.log(e, 'error')
+        await promiseA().catch(e => {
+          console.log(e, 'error1')
+        })
+      })
+      console.log('aaa >>>', a)
+    }
+    funA()
+  </script>
+  <script>
     class Chat {
       constructor({ calledHandle, host, socketPath, getCallReject } = {}) {
         this.host = host
@@ -221,10 +239,15 @@
       async  getLocalMedia() {
         let localMedia = await navigator.mediaDevices
           .getUserMedia({ video: { facingMode: "user" }, audio: true })
-          .catch(e => {
-            console.log(e)
+          .catch(async e => {
+            console.log('navigator.mediaDevices.getUserMedia 前置摄像头>>>>>>', e)
+            localMedia = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: { exact: "environment" } }})
+            .catch(e => {
+              console.log('navigator.mediaDevices.getUserMedia 后置摄像头>>>>>>', e)
+            })
           })
         this.localMedia = localMedia
+        
         return this
       }
       // 设置媒体流到video
